@@ -12,6 +12,8 @@ define lxc::container (
 
   #validate_re($template, $lxc::params::supported_templates,'Template not supported')
 
+  Exec { path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ] }
+
   file { "/var/lib/lxc/${name}":
     ensure => directory,
   }
