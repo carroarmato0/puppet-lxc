@@ -10,7 +10,6 @@ Support for anything else is at the moment very limited
 Usage
 ---
 
-	:::puppet
 	class {'lxc':}
 
 	Lxc::Container {
