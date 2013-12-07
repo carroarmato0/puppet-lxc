@@ -1,0 +1,24 @@
+Puppet LXC
+---
+
+This is a puppet module for installing and managing LXC containers.
+
+This module has been tested on Ubuntu 13.10 server edition with LVM as storage backend.
+
+Support for anything else is at the moment very limited
+
+Usage
+---
+
+	:::puppet
+	class {'lxc':}
+
+	Lxc::Container {
+	    autostart    => true,
+	    fstype       => 'ext4',
+	    template     => 'ubuntu',
+	    vgname       => 'vgStorage',
+	    backingstore => 'lvm',
+  	}
+
+ 	lxc::container {'myhostname.lxc':
