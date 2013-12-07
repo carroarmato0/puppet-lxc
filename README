@@ -20,4 +20,4 @@ Usage
 	    backingstore => 'lvm',
   	}
 
- 	lxc::container {'myhostname.lxc':
+ 	lxc::container {'myhostname.lxc':}

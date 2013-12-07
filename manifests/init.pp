@@ -25,9 +25,9 @@ class lxc (
   }
 
   ## Templates
-  lxc::template {$lxc::params::supported_templates:
-    templatedir => $templatedir,
-  }
+  #lxc::template {$lxc::params::supported_templates:
+  #  templatedir => $templatedir,
+  #}
 
   ## Functions
   file { '/usr/share/lxc/lxc.functions':
