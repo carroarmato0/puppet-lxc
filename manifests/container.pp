@@ -1,6 +1,6 @@
 define lxc::container (
   $template,
-  $ensure       = present,
+  $ensure       = 'present',
   $vgname       = $lxc::params::vgname,
   $fstype       = $lxc::params::fstype,
   $fssize       = $lxc::params::fssize,
@@ -10,74 +10,86 @@ define lxc::container (
 
   include lxc
 
+  $conf_path = '/var/lib/lxc'
+
   #validate_re($template, $lxc::params::supported_templates,'Template not supported')
 
   Exec { path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ] }
 
-  file { "/var/lib/lxc/${name}":
-    ensure => directory,
-  }
+  #file { "${conf_path}/${name}":
+  #  ensure => directory,
+  #}
 
-  file { "/var/lib/lxc/${name}/config":
-    ensure => file,
-  }
+  #file { "/var/lib/lxc/${name}/config":
+  #  ensure => file,
+  #}
 
   if $autostart {
     file { "/etc/lxc/auto/${name}.conf":
       ensure  => link,
-      target  => "/var/lib/lxc/${name}/config",
-      require => [File['/etc/lxc/auto'],File["/var/lib/lxc/${name}"],File["/var/lib/lxc/${name}/config"]],
+      target  => "${conf_path}/${name}/config",
+      require => File['/etc/lxc/auto'],
     }
+  }
+
+  exec { "Stop_container_${name}":
+    command     => "lxc-stop -n ${name}",
+    unless      => "lxc-ls --stopped $name",
+    refreshonly => true,
   }
 
   case $ensure {
     'present', 'install': {
-
       case $backingstore {
         'lvm': {
-          exec { "Create a ${template} container ${name} with LVM backend, ${vgname} volume group, ${fstype} FS and ${fssize} big":
+          exec { "Create_a_${template}_container_${name}_with_LVM_backend_${vgname}_volume_group_${fstype}_FS_and_${fssize}_big":
             command => "lxc-create -n ${name} -t ${template} -B lvm --vgname=${vgname} --fstype=${fstype} --fssize=${fssize}",
-            unless  => "lxc-ls ${name}",
+            before  => Exec["Start_container_${name}"],
+            unless  => "test -f ${conf_path}/${name}/config",
           }
         }
         'loop': {
-          exec { "Create a ${template} container ${name} with loop":
+          exec { "Create_a_${template}_container_${name}_with_loop":
             command => "lxc-create -n ${name} -t ${template} -B loop",
-            unless  => "lxc-ls ${name}",
+            before  => Exec["Start_container_${name}"],
+            unless  => "test -f ${conf_path}/${name}/config",
           }
         }
         'btrfs': {
-          exec { "Create a ${template} container ${name} with btrfs":
+          exec { "Create_a_${template}_container_${name}_with_btrfs":
             command => "lxc-create -n ${name} -t ${template} -B btrfs",
-            unless  => "lxc-ls ${name}",
+            before  => Exec["Start_container_${name}"],
+            unless  => "test -f ${conf_path}/${name}/config",
           }
         }
         'none', default: {
-          exec { "Create a ${template} container ${name} with minimal defaults":
+          exec { "Create_a_${template}_container_${name}_with_minimal_defaults":
             command => "lxc-create -n ${name} -t ${template}",
-            unless  => "lxc-ls ${name}",
+            before  => Exec["Start_container_${name}"],
+            unless  => "test -f ${conf_path}/${name}/config",
           }
         }
       }
 
-      exec { "Start container ${name}":
+      exec { "Start_container_${name}":
         command => "lxc-start -d -n ${name}",
-        unless  => "lxc-ls --active ${name}",
+        onlyif  => "test ! -z `lxc-ls --stopped ${name}`",
       }
     }
     'stopped', 'shutdown', 'halted': {
-      exec { "Stop container ${name}":
+      exec { "Stop_container_${name}":
         command => "lxc-stop -n ${name}",
-        unless => "lxc-ls --stopped ${name}",
+        onlyif  => "test ! -z `lxc-ls --running ${name}`",
       }
     }
     'purge','delete','destroy','absent': {
-      exec { "Purge container ${name}":
-        command => "lxc-destroy -n ${name}",
-        require => Exec["Stop container ${name}"],
+      exec { "Purge_container_${name}":
+        command => "lxc-stop -n ${name} && lxc-destroy -n ${name}",
+        onlyif  => "test -f ${conf_path}/${name}/config",
       }
 
     }
   }
 
 }
+
