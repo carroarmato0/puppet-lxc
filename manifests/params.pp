@@ -6,9 +6,20 @@ class lxc::params {
   $templatedir           = '/usr/share/lxc/templates'
   $lxcinitdir            = '/usr/lib/x86_64-linux-gnu'
   $containerdir          = '/var/lib/lxc'
-  $lxc_path              = 'lxc-config lxcpath'
-  $lxc_vg                = 'lxc_config lvm_vg'
-  $lxc_zfsroot           = 'lxc-config zfsroot'
+
+  case $::lsbdistdescription {
+    'Ubuntu 14.04 LTS': {
+      $lxc_path              = 'lxc-config lxc.lxcpath'
+      $lxc_vg                = 'lxc-config lxc.bdev.lvm.vg'
+      $lxc_zfsroot           = 'lxc-config lxc.bdev.zfs.root'
+    }
+    default: {
+      $lxc_path              = 'lxc-config lxcpath'
+      $lxc_vg                = 'lxc_config lvm_vg'
+      $lxc_zfsroot           = 'lxc-config zfsroot'
+    }
+  }
+
   $network_type          = 'veth'
   $network_link          = 'lxcbr0'
   $network_flags         = 'up'
