@@ -4,12 +4,8 @@ class lxc::package {
     ensure => present,
   }
 
-  package {'debootstrap':
-    ensure => present,
-  }
-
-  package {'cgroup-lite':
-    ensure => present,
+  package { $::lxc::params::extra_packages:
+    ensure => installed,
   }
 
 }
