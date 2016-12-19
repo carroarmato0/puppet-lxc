@@ -1,17 +1,18 @@
 define lxc::container (
   $template,
-  $ensure        = 'present',
-  $vgname        = $lxc::params::vgname,
-  $fstype        = $lxc::params::fstype,
-  $fssize        = $lxc::params::fssize,
-  $backingstore  = 'none',
-  $autostart     = true,
-  $enable_ovs    = $lxc::enable_ovs,
-  $network_type  = $lxc::network_type,
-  $network_link  = $lxc::network_link,
-  $network_flags = $lxc::network_flags,
-  $bridge        = $lxc::bridge,
-  $extra_config  = {},
+  $ensure           = 'present',
+  $vgname           = $lxc::params::vgname,
+  $fstype           = $lxc::params::fstype,
+  $fssize           = $lxc::params::fssize,
+  $backingstore     = 'none',
+  $autostart        = true,
+  $enable_ovs       = $lxc::enable_ovs,
+  $network_type     = $lxc::network_type,
+  $network_link     = $lxc::network_link,
+  $network_flags    = $lxc::network_flags,
+  $bridge           = $lxc::bridge,
+  $extra_config     = {},
+  $execute_commands = {},
 ){
 
   include lxc
@@ -69,6 +70,13 @@ define lxc::container (
         ensure  => file,
         mode    => '0644',
         content => template('lxc/container.erb'),
+      }
+
+      if !empty($execute_commands) {
+        $defaults_exec = {
+          'container' => $name,
+        }
+        create_resources('lxc::execute', $execute_commands, $defaults_exec)
       }
 
     }
