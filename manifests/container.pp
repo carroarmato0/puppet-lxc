@@ -1,26 +1,22 @@
 define lxc::container (
   $template,
-  $ensure       = 'present',
-  $vgname       = $lxc::params::vgname,
-  $fstype       = $lxc::params::fstype,
-  $fssize       = $lxc::params::fssize,
-  $backingstore = 'none',
-  $autostart    = true,
+  $ensure        = 'present',
+  $vgname        = $lxc::params::vgname,
+  $fstype        = $lxc::params::fstype,
+  $fssize        = $lxc::params::fssize,
+  $backingstore  = 'none',
+  $autostart     = true,
+  $enable_ovs    = $lxc::enable_ovs,
+  $network_type  = $lxc::network_type,
+  $network_link  = $lxc::network_link,
+  $network_flags = $lxc::network_flags,
+  $bridge        = $lxc::bridge,
+  $extra_config  = {},
 ){
 
   include lxc
 
-  #validate_re($template, $lxc::params::supported_templates,'Template not supported')
-
   Exec { path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ] }
-
-  #file { "${lxc::params::containerdir}/${name}":
-  #  ensure => directory,
-  #}
-
-  #file { "${lxc::params::containerdir}/${name}/config":
-  #  ensure => file,
-  #}
 
   if $autostart {
     file { "/etc/lxc/auto/${name}.conf":
@@ -72,7 +68,15 @@ define lxc::container (
       exec { "Start_container_${name}":
         command => "lxc-start -d -n ${name}",
         onlyif  => "test ! -z `lxc-ls --stopped ${name}`",
+        require => File["${lxc::params::containerdir}/${name}/config"],
       }
+
+      file { "${lxc::params::containerdir}/${name}/config":
+        ensure  => file,
+        mode    => '0644',
+        content => template('lxc/container.erb'),
+      }
+
     }
     'stopped', 'shutdown', 'halted': {
       exec { "Stop_container_${name}":
@@ -90,4 +94,3 @@ define lxc::container (
   }
 
 }
-

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+BRIDGE="<%= @bridge %>"
+ovs-vsctl --if-exists del-port $BRIDGE $5
+ovs-vsctl --may-exist add-port $BRIDGE $5
