@@ -26,12 +26,6 @@ define lxc::container (
     }
   }
 
-  exec { "Stop_container_${name}":
-    command     => "lxc-stop -n ${name}",
-    unless      => "lxc-ls --stopped $name",
-    refreshonly => true,
-  }
-
   case $ensure {
     'present', 'install': {
       case $backingstore {
@@ -67,7 +61,7 @@ define lxc::container (
 
       exec { "Start_container_${name}":
         command => "lxc-start -d -n ${name}",
-        onlyif  => "test ! -z `lxc-ls --stopped ${name}`",
+        onlyif  => "lxc-info -n ${name} | grep -c STOPPED",
         require => File["${lxc::params::containerdir}/${name}/config"],
       }
 
@@ -81,7 +75,7 @@ define lxc::container (
     'stopped', 'shutdown', 'halted': {
       exec { "Stop_container_${name}":
         command => "lxc-stop -n ${name}",
-        onlyif  => "test ! -z `lxc-ls --running ${name}`",
+        onlyif  => "lxc-info -n ${name} | grep -c RUNNING",
       }
     }
     'purge','delete','destroy','absent': {
