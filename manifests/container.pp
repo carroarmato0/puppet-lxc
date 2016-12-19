@@ -72,6 +72,13 @@ define lxc::container (
         content => template('lxc/container.erb'),
       }
 
+      file { "${lxc::params::containerdir}/${name}/locks":
+        ensure  => directory,
+        mode    => '0644',
+        purge   => true,
+        recurse => true,
+      }
+
       if !empty($execute_commands) {
         $defaults_exec = {
           'container' => $name,
