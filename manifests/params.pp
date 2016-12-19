@@ -23,6 +23,7 @@ class lxc::params {
       $lxc_zfsroot           = 'lxc-config lxc.bdev.zfs.root'
       $extra_packages        = [
         'lxc-templates',
+        'lxc-extra',
       ]
     }
     default: {
