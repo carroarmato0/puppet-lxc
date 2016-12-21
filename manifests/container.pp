@@ -70,6 +70,13 @@ define lxc::container (
         ensure  => file,
         mode    => '0644',
         content => template('lxc/container.erb'),
+        require => "${lxc::params::containerdir}/${name}",
+      }
+
+      file { "${lxc::params::containerdir}/${name}":
+        ensure  => directory,
+        mode    => '0644',
+        before  => Exec["Start container: ${name}"],
       }
 
       file { "${lxc::params::containerdir}/${name}/locks":
