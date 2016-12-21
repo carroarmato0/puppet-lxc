@@ -31,36 +31,36 @@ define lxc::container (
     'present', 'install': {
       case $backingstore {
         'lvm': {
-          exec { "Create_a_${template}_container_${name}_with_LVM_backend_${vgname}_volume_group_${fstype}_FS_and_${fssize}_big":
+          exec { "Create a ${template} container ${name} with LVM backend ${vgname} volume group ${fstype} FS_and ${fssize} big":
             command => "lxc-create -n ${name} -t ${template} -B lvm --vgname=${vgname} --fstype=${fstype} --fssize=${fssize}",
-            before  => Exec["Start_container_${name}"],
+            before  => Exec["Start container: ${name}"],
             unless  => "test -f ${lxc::params::containerdir}/${name}/config",
           }
         }
         'loop': {
-          exec { "Create_a_${template}_container_${name}_with_loop":
+          exec { "Create a ${template} container ${name} with loop":
             command => "lxc-create -n ${name} -t ${template} -B loop",
-            before  => Exec["Start_container_${name}"],
+            before  => Exec["Start container: ${name}"],
             unless  => "test -f ${lxc::params::containerdir}/${name}/config",
           }
         }
         'btrfs': {
-          exec { "Create_a_${template}_container_${name}_with_btrfs":
+          exec { "Create a ${template} container ${name} with btrfs":
             command => "lxc-create -n ${name} -t ${template} -B btrfs",
-            before  => Exec["Start_container_${name}"],
+            before  => Exec["Start container: ${name}"],
             unless  => "test -f ${lxc::params::containerdir}/${name}/config",
           }
         }
         'none', default: {
-          exec { "Create_a_${template}_container_${name}_with_minimal_defaults":
+          exec { "Create a ${template} container ${name} with minimal defaults":
             command => "lxc-create -n ${name} -t ${template}",
-            before  => Exec["Start_container_${name}"],
+            before  => Exec["Start container: ${name}"],
             unless  => "test -f ${lxc::params::containerdir}/${name}/config",
           }
         }
       }
 
-      exec { "Start_container_${name}":
+      exec { "Start container: ${name}":
         command => "lxc-start -d -n ${name}",
         onlyif  => "lxc-info -n ${name} | grep -c STOPPED",
         require => File["${lxc::params::containerdir}/${name}/config"],
@@ -88,13 +88,13 @@ define lxc::container (
 
     }
     'stopped', 'shutdown', 'halted': {
-      exec { "Stop_container_${name}":
+      exec { "Stop container: ${name}":
         command => "lxc-stop -n ${name}",
         onlyif  => "lxc-info -n ${name} | grep -c RUNNING",
       }
     }
     'purge','delete','destroy','absent': {
-      exec { "Purge_container_${name}":
+      exec { "Purge container: ${name}":
         command => "lxc-stop -n ${name} && lxc-destroy -n ${name}",
         onlyif  => "test -f ${lxc::params::containerdir}/${name}/config",
       }
