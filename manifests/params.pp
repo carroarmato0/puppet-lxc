@@ -7,29 +7,34 @@ class lxc::params {
   $lxcinitdir            = '/usr/lib/x86_64-linux-gnu'
   $containerdir          = '/var/lib/lxc'
 
+  # If the detected vesion of LXC is 1.x.x
+  if versioncmp($::lxc_version, '2.0.0') == -1 {
+    $lxc_path              = 'lxc-config lxc.lxcpath'
+    $lxc_vg                = 'lxc-config lxc.bdev.lvm.vg'
+    $lxc_zfsroot           = 'lxc-config lxc.bdev.zfs.root'
+    $lxc_list              = 'lxc-ls'
+  } else {
+    # If version is 2.x.x
+    $lxc_path              = 'lxc config lxc.lxcpath'
+    $lxc_vg                = 'lxc config lxc.bdev.lvm.vg'
+    $lxc_zfsroot           = 'lxc config lxc.bdev.zfs.root'
+    $lxc_list              = 'lxc list'
+  }
+
   case $::osfamily {
     'Debian': {
-      $lxc_path              = 'lxc-config lxc.lxcpath'
-      $lxc_vg                = 'lxc-config lxc.bdev.lvm.vg'
-      $lxc_zfsroot           = 'lxc-config lxc.bdev.zfs.root'
       $extra_packages        = [
         'debootstrap',
         'cgroup-lite',
       ]
     }
     'Redhat': {
-      $lxc_path              = 'lxc-config lxc.lxcpath'
-      $lxc_vg                = 'lxc-config lxc.bdev.lvm.vg'
-      $lxc_zfsroot           = 'lxc-config lxc.bdev.zfs.root'
       $extra_packages        = [
         'lxc-templates',
         'lxc-extra',
       ]
     }
     default: {
-      $lxc_path              = 'lxc-config lxcpath'
-      $lxc_vg                = 'lxc_config lvm_vg'
-      $lxc_zfsroot           = 'lxc-config zfsroot'
       $extra_packages        = []
     }
   }

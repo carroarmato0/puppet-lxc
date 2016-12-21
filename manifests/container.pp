@@ -34,28 +34,28 @@ define lxc::container (
           exec { "Create a ${template} container ${name} with LVM backend ${vgname} volume group ${fstype} FS_and ${fssize} big":
             command => "lxc-create -n ${name} -t ${template} -B lvm --vgname=${vgname} --fstype=${fstype} --fssize=${fssize}",
             before  => Exec["Start container: ${name}"],
-            unless  => "test -f ${lxc::params::containerdir}/${name}/config",
+            unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
         'loop': {
           exec { "Create a ${template} container ${name} with loop":
             command => "lxc-create -n ${name} -t ${template} -B loop",
             before  => Exec["Start container: ${name}"],
-            unless  => "test -f ${lxc::params::containerdir}/${name}/config",
+            unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
         'btrfs': {
           exec { "Create a ${template} container ${name} with btrfs":
             command => "lxc-create -n ${name} -t ${template} -B btrfs",
             before  => Exec["Start container: ${name}"],
-            unless  => "test -f ${lxc::params::containerdir}/${name}/config",
+            unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
         'none', default: {
           exec { "Create a ${template} container ${name} with minimal defaults":
             command => "lxc-create -n ${name} -t ${template}",
             before  => Exec["Start container: ${name}"],
-            unless  => "test -f ${lxc::params::containerdir}/${name}/config",
+            unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
       }
@@ -63,20 +63,11 @@ define lxc::container (
       exec { "Start container: ${name}":
         command => "lxc-start -d -n ${name}",
         onlyif  => "lxc-info -n ${name} | grep -c STOPPED",
-        require => File["${lxc::params::containerdir}/${name}/config"],
-      }
-
-      file { "${lxc::params::containerdir}/${name}/config":
-        ensure  => file,
-        mode    => '0644',
-        content => template('lxc/container.erb'),
-        require => "${lxc::params::containerdir}/${name}",
       }
 
       file { "${lxc::params::containerdir}/${name}":
         ensure  => directory,
         mode    => '0644',
-        before  => Exec["Start container: ${name}"],
       }
 
       file { "${lxc::params::containerdir}/${name}/locks":
