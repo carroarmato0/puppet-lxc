@@ -49,7 +49,7 @@ define lxc::execute (
       ensure  => file,
       mode    => '0644',
       content => "### Managed by Puppet ###\nThis is a lock file for the execution of \"${title}\"\n",
-      require => Exec["${container}: ${title}"],
+      require => [Exec["${container}: ${title}"], File["${lxc::params::containerdir}/${container}/locks/"]],
     }
   }
 

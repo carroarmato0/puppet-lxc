@@ -77,11 +77,13 @@ define lxc::container (
         mode    => '0644',
         purge   => true,
         recurse => true,
+        before  => Exec["Start container: ${name}"],
       }
 
       if !empty($execute_commands) {
         $defaults_exec = {
           'container' => $name,
+          'require'   => Exec["Start container: ${name}"],
         }
         create_resources('lxc::execute', $execute_commands, $defaults_exec)
       }
