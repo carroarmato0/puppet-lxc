@@ -5,7 +5,7 @@ define lxc::container (
   $fstype           = $lxc::params::fstype,
   $fssize           = $lxc::params::fssize,
   $backingstore     = 'none',
-  $autostart        = true,
+  $autostart        = $lxc::params::autostart,
   $enable_ovs       = $lxc::enable_ovs,
   $network_type     = $lxc::network_type,
   $network_link     = $lxc::network_link,
@@ -19,7 +19,7 @@ define lxc::container (
 
   Exec { path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ] }
 
-  if $autostart {
+  if $autostart == true {
     file { "/etc/lxc/auto/${name}.conf":
       ensure  => link,
       target  => "${lxc::params::containerdir}/${name}/config",

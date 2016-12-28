@@ -6,6 +6,7 @@ class lxc::params {
   $templatedir           = '/usr/share/lxc/templates'
   $lxcinitdir            = '/usr/lib/x86_64-linux-gnu'
   $containerdir          = '/var/lib/lxc'
+  $autostart             = 1
 
   # If the detected vesion of LXC is 1.x.x
   if versioncmp($::lxc_version, '2.0.0') == -1 {

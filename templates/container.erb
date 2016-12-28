@@ -17,6 +17,11 @@ lxc.utsname= <%= @title %>
 
 lxc.mount.auto= sys
 
+<% if @autostart == 1 or @autostart == 0 -%>
+lxc.start.auto = <%= @autostart %>
+lxc.start.delay = 5
+<% end -%>
+
 <% @extra_config.each_pair do |key, value| -%>
 <%= key %>= <%= value %>
 <% end -%>
