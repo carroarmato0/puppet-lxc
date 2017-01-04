@@ -95,7 +95,7 @@ define lxc::container (
     }
     'purge','delete','destroy','absent': {
       exec { "Purge container: ${name}":
-        command => "lxc-stop -n ${name} && lxc-destroy -n ${name}",
+        command => "lxc-stop -n ${name}; lxc-destroy -n ${name}",
         onlyif  => "test -f ${lxc::params::containerdir}/${name}/config",
       }
 
