@@ -5,6 +5,7 @@ define lxc::container (
   $fstype           = $lxc::params::fstype,
   $fssize           = $lxc::params::fssize,
   $backingstore     = 'none',
+  $hwaddr           = '',
   $autostart        = $lxc::params::autostart,
   $enable_ovs       = $lxc::enable_ovs,
   $network_type     = $lxc::network_type,
@@ -76,6 +77,24 @@ define lxc::container (
         purge   => true,
         recurse => true,
         before  => Exec["Start container: ${name}"],
+      }
+
+      if $hwaddr != '' {
+        file_line { "${name}: hwaddr":
+          ensure  => present,
+          path    => "${lxc::params::containerdir}/${name}/config",
+          line    => "lxc.network.hwaddr = ${hwaddr}",
+          before  => Exec["Start container: ${name}"],
+        }
+      } else {
+        file_line { "${name}: hwaddr":
+          ensure            => absent,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.network.hwaddr = ${hwaddr}",
+          match             => '^lxc.network.hwaddr\ =\ ',
+          match_for_absence => true,
+          before            => Exec["Start container: ${name}"],
+        }
       }
 
       if !empty($execute_commands) {
