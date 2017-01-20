@@ -20,14 +20,6 @@ define lxc::container (
 
   Exec { path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ] }
 
-  if $autostart == true {
-    file { "/etc/lxc/auto/${name}.conf":
-      ensure  => link,
-      target  => "${lxc::params::containerdir}/${name}/config",
-      require => File['/etc/lxc/auto'],
-    }
-  }
-
   case $ensure {
     'present', 'install': {
       case $backingstore {
@@ -35,6 +27,7 @@ define lxc::container (
           exec { "Create a ${template} container ${name} with LVM backend ${vgname} volume group ${fstype} FS_and ${fssize} big":
             command => "lxc-create -n ${name} -t ${template} -B lvm --vgname=${vgname} --fstype=${fstype} --fssize=${fssize}",
             before  => Exec["Start container: ${name}"],
+            alias   => "Create ${name}",
             unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
@@ -42,6 +35,7 @@ define lxc::container (
           exec { "Create a ${template} container ${name} with loop":
             command => "lxc-create -n ${name} -t ${template} -B loop",
             before  => Exec["Start container: ${name}"],
+            alias   => "Create ${name}",
             unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
@@ -49,6 +43,7 @@ define lxc::container (
           exec { "Create a ${template} container ${name} with btrfs":
             command => "lxc-create -n ${name} -t ${template} -B btrfs",
             before  => Exec["Start container: ${name}"],
+            alias   => "Create ${name}",
             unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
@@ -56,6 +51,7 @@ define lxc::container (
           exec { "Create a ${template} container ${name} with minimal defaults":
             command => "lxc-create -n ${name} -t ${template}",
             before  => Exec["Start container: ${name}"],
+            alias   => "Create ${name}",
             unless  => "${lxc::params::lxc_list} | grep -c ${name}",
           }
         }
@@ -84,6 +80,7 @@ define lxc::container (
           ensure  => present,
           path    => "${lxc::params::containerdir}/${name}/config",
           line    => "lxc.network.hwaddr = ${hwaddr}",
+          require => Exec["Create ${name}"],
           before  => Exec["Start container: ${name}"],
         }
       } else {
@@ -93,6 +90,27 @@ define lxc::container (
           line              => "lxc.network.hwaddr = ${hwaddr}",
           match             => '^lxc.network.hwaddr\ =\ ',
           match_for_absence => true,
+          require           => Exec["Create ${name}"],
+          before            => Exec["Start container: ${name}"],
+        }
+      }
+
+      if $autostart {
+        file_line { "${name}: autostart":
+          ensure  => present,
+          path    => "${lxc::params::containerdir}/${name}/config",
+          line    => "lxc.start.auto = 1",
+          require => Exec["Create ${name}"],
+          before  => Exec["Start container: ${name}"],
+        }
+      } else {
+        file_line { "${name}: autostart":
+          ensure            => absent,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.start.auto = 1",
+          match             => '^lxc.start.auto\ =\ ',
+          match_for_absence => true,
+          require           => Exec["Create ${name}"],
           before            => Exec["Start container: ${name}"],
         }
       }
