@@ -5,8 +5,8 @@
 lxc.network.type = <%= @network_type %>
 lxc.network.flags = <%= @network_flags %>
 <% if @enable_ovs == true -%>
-lxc.network.script.up = /etc/lxc/<%= @title %>-ovsup
-lxc.network.script.down = /etc/lxc/<%= @title %>-ovsdown
+lxc.network.script.up = /etc/lxc/ovs/<%= @title %>-ovsup
+lxc.network.script.down = /etc/lxc/ovs/<%= @title %>-ovsdown
 <% else -%>
 lxc.network.link = <%= @network_link %>
 <% end -%>

@@ -8,6 +8,7 @@ define lxc::container (
   $hwaddr           = '',
   $autostart        = $lxc::params::autostart,
   $enable_ovs       = $lxc::enable_ovs,
+  #$enable_ovs       = false,
   $network_type     = $lxc::network_type,
   $network_link     = $lxc::network_link,
   $network_flags    = $lxc::network_flags,
@@ -115,6 +116,56 @@ define lxc::container (
         }
       }
 
+      if $enable_ovs {
+        file_line { "${name}: ovsup":
+          ensure            => present,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.network.script.up = /etc/lxc/ovs/${name}-ovsup",
+          match             => '^lxc.network.script.up\ =\ ',
+          match_for_absence => true,
+          require           => [
+            Exec["Create ${name}"],
+            File["/etc/lxc/ovs/${name}-ovsup"],
+          ],
+          before            => Exec["Start container: ${name}"],
+        }
+        file_line { "${name}: ovsdown":
+          ensure            => present,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.network.script.down = /etc/lxc/ovs/${name}-ovsdown",
+          match             => '^lxc.network.script.down\ =\ ',
+          match_for_absence => true,
+          require           => [
+            Exec["Create ${name}"],
+            File["/etc/lxc/ovs/${name}-ovsdown"],
+          ],
+          before            => Exec["Start container: ${name}"],
+        }
+      } else {
+        file_line { "${name}: ovsup":
+          ensure            => absent,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.network.script.up = /etc/lxc/ovs/${name}-ovsup",
+          match             => '^lxc.network.script.up\ =\ ',
+          match_for_absence => true,
+          require           => [
+            Exec["Create ${name}"],
+          ],
+          before            => Exec["Start container: ${name}"],
+        }
+        file_line { "${name}: ovsdown":
+          ensure            => absent,
+          path              => "${lxc::params::containerdir}/${name}/config",
+          line              => "lxc.network.script.down = /etc/lxc/ovs/${name}-ovsdown",
+          match             => '^lxc.network.script.down\ =\ ',
+          match_for_absence => true,
+          require           => [
+            Exec["Create ${name}"],
+          ],
+          before            => Exec["Start container: ${name}"],
+        }
+      }
+
       if !empty($execute_commands) {
         $defaults_exec = {
           'container' => $name,
@@ -140,12 +191,12 @@ define lxc::container (
   }
 
   if $enable_ovs {
-    file { "/etc/lxc/${name}-ovsup":
+    file { "/etc/lxc/ovs/${name}-ovsup":
       ensure  => file,
       mode    => '0655',
       content => template('lxc/ovsup.erb'),
     }
-    file { "/etc/lxc/${name}-ovsdown":
+    file { "/etc/lxc/ovs/${name}-ovsdown":
       ensure  => file,
       mode    => '0655',
       content => template('lxc/ovsdown.erb'),

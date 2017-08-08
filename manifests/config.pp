@@ -7,6 +7,11 @@ class lxc::config {
   file { '/etc/lxc':
     ensure => directory,
   }
+  file { '/etc/lxc/ovs/':
+    ensure  => directory,
+    recurse => true,
+    purge   => true,
+  }
   file { '/etc/lxc/auto':
     ensure  => directory,
     recurse => true,
