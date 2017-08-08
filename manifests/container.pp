@@ -139,7 +139,7 @@ define lxc::container (
     }
   }
 
-  if $::enable_ovs {
+  if $enable_ovs {
     file { "/etc/lxc/${name}-ovsup":
       ensure  => file,
       mode    => '0655',
