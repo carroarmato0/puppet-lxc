@@ -139,4 +139,17 @@ define lxc::container (
     }
   }
 
+  if $::enable_ovs {
+    file { "/etc/lxc/${name}-ovsup":
+      ensure  => file,
+      mode    => '0655',
+      content => template('lxc/ovsup.erb'),
+    }
+    file { "/etc/lxc/${name}-ovsdown":
+      ensure  => file,
+      mode    => '0655',
+      content => template('lxc/ovsdown.erb'),
+    }
+  }
+
 }

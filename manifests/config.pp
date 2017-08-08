@@ -20,19 +20,6 @@ class lxc::config {
     recurselimit  => 0,
   }
 
-  if $::lxc::enable_ovs {
-    file { '/etc/lxc/ovsup':
-      ensure  => file,
-      mode    => '0655',
-      content => template('lxc/ovsup.erb'),
-    }
-    file { '/etc/lxc/ovsdown':
-      ensure  => file,
-      mode    => '0655',
-      content => template('lxc/ovsdown.erb'),
-    }
-  }
-
   ## Functions
   file { '/usr/share/lxc/lxc.functions':
     ensure  => file,
