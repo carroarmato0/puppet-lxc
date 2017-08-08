@@ -8,7 +8,6 @@ define lxc::container (
   $hwaddr           = '',
   $autostart        = $lxc::params::autostart,
   $enable_ovs       = $lxc::enable_ovs,
-  #$enable_ovs       = false,
   $network_type     = $lxc::network_type,
   $network_link     = $lxc::network_link,
   $network_flags    = $lxc::network_flags,
