@@ -107,6 +107,7 @@ define lxc::container (
         ensure  => present,
         path    => "${lxc::params::containerdir}/${name}/config",
         line    => "lxc.network.flags = ${network_flags}",
+        after   => '^lxc.network.type\ =\ ',
         require => Exec["Create ${name}"],
         before  => Exec["Start container: ${name}"],
       }
@@ -138,6 +139,7 @@ define lxc::container (
           line              => "lxc.network.script.up = /etc/lxc/ovs/${name}-ovsup",
           match             => '^lxc.network.script.up\ =\ ',
           match_for_absence => true,
+          after             => '^lxc.network.flags\ =\ ',
           require           => [
             Exec["Create ${name}"],
             File["/etc/lxc/ovs/${name}-ovsup"],
@@ -150,6 +152,7 @@ define lxc::container (
           line              => "lxc.network.script.down = /etc/lxc/ovs/${name}-ovsdown",
           match             => '^lxc.network.script.down\ =\ ',
           match_for_absence => true,
+          after             => '^lxc.network.flags\ =\ ',
           require           => [
             Exec["Create ${name}"],
             File["/etc/lxc/ovs/${name}-ovsdown"],
