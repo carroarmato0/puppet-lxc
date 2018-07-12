@@ -95,6 +95,22 @@ define lxc::container (
         }
       }
 
+      file_line { "${name}: network_type":
+        ensure  => present,
+        path    => "${lxc::params::containerdir}/${name}/config",
+        line    => "lxc.network.type = ${network_type}",
+        require => Exec["Create ${name}"],
+        before  => Exec["Start container: ${name}"],
+      }
+
+      file_line { "${name}: network_flags":
+        ensure  => present,
+        path    => "${lxc::params::containerdir}/${name}/config",
+        line    => "lxc.network.flags = ${network_flags}",
+        require => Exec["Create ${name}"],
+        before  => Exec["Start container: ${name}"],
+      }
+
       if $autostart {
         file_line { "${name}: autostart":
           ensure  => present,
